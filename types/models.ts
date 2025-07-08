@@ -6,6 +6,16 @@ export enum UserType {
   Admin = 'admin'
 }
 
+export enum SlotTime {
+  T10 = '10:00',
+  T11 = '11:00',
+  T12 = '12:00',
+  T14 = '14:00',
+  T15 = '15:00',
+  T16 = '16:00',
+  T17 = '17:00'
+}
+
 export enum Specialization {
   Cardiology = 'Cardiology',
   Medicine = 'Medicine',
@@ -48,8 +58,7 @@ export interface Slot extends Document {
   doctor_id: mongoose.Types.ObjectId;
   slot_date: Date;
   slot_time: string;
-  duration: number;
-  is_available: boolean;
+  expire_at: Date;
 }
 
 export interface Appointment extends Document {
