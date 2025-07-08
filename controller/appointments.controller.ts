@@ -2,8 +2,8 @@ import asyncHandler from 'express-async-handler';
 import { Request, Response } from 'express';
 import AppointmentModel from '../models/Appointment';
 import SlotModel from '../models/Slot';
-import { Appointment, AppointmentStatus, Slot } from '../types/models';
-import mongoose, { ObjectId } from 'mongoose';
+import { Appointment, AppointmentStatus } from '../types/models';
+import mongoose from 'mongoose';
 
 // @desc    Get all appointments
 // @route   GET /api/v1/appointments
@@ -57,7 +57,6 @@ export const createAppointment = asyncHandler(async (req: Request, res: Response
 
   res.status(201).json(appointment);
 });
-
 
 // @desc    Update appointment
 // @route   PUT /api/v1/appointments/:id
@@ -120,7 +119,6 @@ export const updateAppointment = asyncHandler(async (req: Request, res: Response
   res.status(200).json(updated);
 });
 
-
 // @desc    Delete appointment
 // @route   DELETE /api/v1/appointments/:id
 // @access  Private
@@ -132,6 +130,7 @@ export const deleteAppointment = asyncHandler(async (req: Request, res: Response
     res.status(404);
     throw new Error('Appointment not found');
   }
+  await SlotModel.findByIdAndDelete(appointment.slot_id)
   await appointment.deleteOne();
 
   res.status(200).json({ message: `Appointment ${id} deleted` });

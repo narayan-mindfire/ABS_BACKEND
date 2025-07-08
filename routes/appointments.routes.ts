@@ -1,4 +1,4 @@
-import express, { Response, Request } from "express"
+import express from "express"
 import { createAppointment, deleteAppointment, getAppointments, updateAppointment } from "../controller/appointments.controller"
 
 const appointmentRouter = express.Router()
