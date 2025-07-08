@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { Appointment, AppointmentStatus } from '../types/models';
 
 const appointmentSchema = new Schema<Appointment>({
@@ -11,8 +11,10 @@ const appointmentSchema = new Schema<Appointment>({
     default: AppointmentStatus.Booked
   },
   purpose: String,
-  created_at: { type: Date, default: Date.now },
-  updated_at: { type: Date, default: Date.now }
-});
+},{
+  timestamps: true
+}
+
+);
 
 export default mongoose.model<Appointment>('Appointment', appointmentSchema);

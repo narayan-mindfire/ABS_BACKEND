@@ -1,0 +1,137 @@
+import asyncHandler from 'express-async-handler';
+import { Request, Response } from 'express';
+import AppointmentModel from '../models/Appointment';
+import SlotModel from '../models/Slot';
+import { Appointment, AppointmentStatus } from '../types/models';
+import mongoose from 'mongoose';
+
+// @desc    Get all appointments
+// @route   GET /api/v1/appointments
+// @access  Private
+export const getAppointments = asyncHandler(async (req: Request, res: Response) => {
+  const appointments = await AppointmentModel.find()
+    .populate('patient_id', 'first_name last_name')
+    .populate('doctor_id', 'first_name last_name specialization')
+    .populate('slot_id', 'slot_date slot_time');
+
+  res.status(200).json(appointments);
+});
+
+// @desc    Create new appointment
+// @route   POST /api/v1/appointments
+// @access  Private (patient only)
+export const createAppointment = asyncHandler(async (req: Request, res: Response) => {
+  const { patient_id, doctor_id, slot_date, slot_time, purpose } = req.body;
+
+  if (!patient_id || !doctor_id || !slot_date || !slot_time) {
+    res.status(400);
+    throw new Error('Missing required fields');
+  }
+
+  const existingSlot = await SlotModel.findOne({
+    doctor_id,
+    slot_date: new Date(slot_date),
+    slot_time
+  });
+
+  if (existingSlot) {
+    res.status(400);
+    throw new Error('This slot is already booked');
+  }
+
+  const expireAt = new Date(`${slot_date}T${slot_time}`);
+  const slot = await SlotModel.create({
+    doctor_id,
+    slot_date,
+    slot_time,
+    expire_at: expireAt
+  });
+
+  const appointment = await AppointmentModel.create({
+    patient_id,
+    doctor_id,
+    slot_id: slot._id,
+    purpose,
+    status: AppointmentStatus.Booked,
+  });
+
+  res.status(201).json(appointment);
+});
+
+// @desc    Update appointment
+// @route   PUT /api/v1/appointments/:id
+// @access  Private
+export const updateAppointment = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { slot_date, slot_time, purpose, status } = req.body;
+
+  const appointment = await AppointmentModel.findById(id) as Appointment;
+  if (!appointment) {
+    res.status(404);
+    throw new Error('Appointment not found');
+  }
+
+  const doctor_id = appointment.doctor_id;
+  let updatedSlotId = appointment.slot_id;
+
+  const currentSlot = await SlotModel.findById(appointment.slot_id);
+
+  const isSlotChangeRequested =
+    slot_date && slot_time &&
+    (!currentSlot || currentSlot.slot_date.toISOString().split('T')[0] !== slot_date ||
+     currentSlot.slot_time !== slot_time);
+
+  if (isSlotChangeRequested) {
+    const conflict = await SlotModel.findOne({
+      doctor_id,
+      slot_date: new Date(slot_date),
+      slot_time,
+    });
+
+    if (conflict) {
+      res.status(400);
+      throw new Error('The selected new slot is already booked');
+    }
+
+    if (currentSlot) await currentSlot.deleteOne();
+
+    const expireAt = new Date(`${slot_date}T${slot_time}`);
+    const newSlot = await SlotModel.create({
+      doctor_id,
+      slot_date: new Date(slot_date),
+      slot_time,
+      expire_at: expireAt,
+    });
+    updatedSlotId = newSlot._id as mongoose.Types.ObjectId;
+  }
+
+  const updated = await AppointmentModel.findByIdAndUpdate(
+    id,
+    {
+      purpose: purpose ?? appointment.purpose,
+      status: status ?? appointment.status,
+      slot_id: updatedSlotId,
+      updated_at: new Date(),
+    },
+    { new: true }
+  );
+
+  res.status(200).json(updated);
+});
+
+// @desc    Delete appointment
+// @route   DELETE /api/v1/appointments/:id
+// @access  Private
+export const deleteAppointment = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const appointment = await AppointmentModel.findById(id);
+  if (!appointment) {
+    res.status(404);
+    throw new Error('Appointment not found');
+  }
+  await SlotModel.findByIdAndDelete(appointment.slot_id)
+  await appointment.deleteOne();
+
+  res.status(200).json({ message: `Appointment ${id} deleted` });
+});

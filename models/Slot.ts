@@ -1,12 +1,17 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import { Slot } from '../types/models';
+import { Slot, SlotTime } from '../types/models';
 
-const slotSchema = new Schema<Slot>({
+const bookedSlotSchema = new Schema<Slot>({
   doctor_id: { type: Schema.Types.ObjectId, ref: 'Doctor', required: true },
   slot_date: { type: Date, required: true },
-  slot_time: { type: String, required: true },
-  duration: { type: Number, required: true },
-  is_available: { type: Boolean, default: true }
+  slot_time: {
+    type: String,
+    enum: Object.values(SlotTime),
+    required: true
+  },
+  expire_at: { type: Date, required: true }
 });
 
-export default mongoose.model<Slot>('Slot', slotSchema);
+bookedSlotSchema.index({ expire_at: 1 }, { expireAfterSeconds: 0 });
+
+export default mongoose.model<Slot>('Slot', bookedSlotSchema);
