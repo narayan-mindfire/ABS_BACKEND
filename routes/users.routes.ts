@@ -4,8 +4,8 @@ import { protect } from "../middleware/authMiddleware"
 
 const userRouter = express.Router()
 
-userRouter.get('/me', protect, getMe)
-userRouter.put('/me', protect, updateMe)
+// user routes
+userRouter.route('/me').get(protect, getMe).put(protect, updateMe)
 userRouter.route("/").get(getUsers)
 userRouter.route('/:id').delete(deleteUser).put(updateUser).get(getUserById)
 userRouter.post('/register', registerUser)

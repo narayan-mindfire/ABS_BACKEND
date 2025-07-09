@@ -1,8 +1,9 @@
 import { Router } from "express";
 import appointmentRouter from "./appointments.routes";
 import userRouter from "./users.routes";    
-import slotRouter from "./slots.router";
+import slotRouter from "./slots.routes";
 
+// root router
 const router = Router();
 
 router.use('/appointments', appointmentRouter)

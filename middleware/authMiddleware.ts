@@ -9,6 +9,20 @@ interface JwtPayload {
   user_type: string;
 }
 
+/**
+ * Middleware to protect routes by verifying JWT tokens.
+ *
+ * This middleware checks for a Bearer token in the `Authorization` header,
+ * verifies the token using the JWT secret, and attaches the corresponding user
+ * (excluding the password) to the `req.user` property. If the token is missing,
+ * invalid, or the user does not exist, it responds with a 401 Unauthorized error.
+ *
+ * @param req - Express request object, extended to include `user` property.
+ * @param res - Express response object.
+ * @param next - Express next middleware function.
+ *
+ * @throws {Error} If no token is provided, the token is invalid, or the user is not found.
+ */
 export const protect = asyncHandler(async (req: any, res: Response, next: NextFunction) => {
   let token;
 

@@ -92,7 +92,12 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
 export const getUsers = asyncHandler(async (req: Request, res: Response) => {
   const user_type = req.query.user_type as string;
 
-  if ( !user_type || (user_type !== UserType.Doctor && user_type !== UserType.Patient)) {
+  if(!user_type){
+    const all_users = await UserModel.find()
+    res.status(200).json(all_users);
+  }
+
+  if ( user_type !== UserType.Doctor && user_type !== UserType.Patient) {
     res.status(400);
     throw new Error("user_type must be either doctor or patient");
   }
