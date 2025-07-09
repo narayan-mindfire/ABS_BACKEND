@@ -5,7 +5,7 @@ import DoctorModel from "../models/Doctor";
 import PatientModel from "../models/Patient";
 import { User, UserType } from "../types/models";
 import * as bcrypt from "bcryptjs"
-import { generateToken } from "utils/generateToken";
+import { generateToken } from "../utils/generateToken";
 
 // @desc Create user (and doctor/patient profile if needed)
 // @route POST /api/v1/users
@@ -140,6 +140,33 @@ export const getUsers = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
+// @desc Get user by ID
+// @route GET /api/v1/users/:id
+// @access Private
+export const getUserById = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const user = await UserModel.findById(id).select('-password');
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  let profileData = {};
+
+  if (user.user_type === UserType.Doctor) {
+    const doc = await DoctorModel.findOne({ doctor_id: user._id });
+    if (doc) profileData = { specialization: doc.specialization, bio: doc.bio };
+  }
+
+  if (user.user_type === UserType.Patient) {
+    const pat = await PatientModel.findOne({ patient_id: user._id });
+    if (pat) profileData = { gender: pat.gender, date_of_birth: pat.date_of_birth };
+  }
+
+  res.status(200).json({ ...user.toObject(), ...profileData });
+});
+
 // @desc updates user based on user type
 // @route PUT /api/v1/users/:id
 // @access Private
@@ -250,4 +277,69 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     user_id: user._id,
     user_type: user.user_type,
   });
+});
+
+// @desc Get current logged-in user
+// @route GET /api/v1/users/me
+// @access Private
+export const getMe = asyncHandler(async (req: any, res: Response) => {
+  const user = await UserModel.findById(req.user._id).select('-password');
+
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  res.status(200).json(user);
+});
+
+// @desc Update current logged-in user
+// @route PUT /api/v1/users/me
+// @access Private
+export const updateMe = asyncHandler(async (req: any, res: Response) => {
+  const {
+    first_name,
+    last_name,
+    email,
+    phone_number,
+    password,
+    specialization,
+    bio,
+    gender,
+    date_of_birth,
+  } = req.body;
+
+  const user = await UserModel.findById(req.user._id);
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  user.first_name = first_name ?? user.first_name;
+  user.last_name = last_name ?? user.last_name;
+  user.email = email ?? user.email;
+  user.phone_number = phone_number ?? user.phone_number;
+  if (password) user.password = password;
+
+  await user.save();
+
+  if (user.user_type === UserType.Doctor) {
+    const doctor = await DoctorModel.findOne({ doctor_id: user._id });
+    if (doctor) {
+      doctor.specialization = specialization ?? doctor.specialization;
+      doctor.bio = bio ?? doctor.bio;
+      await doctor.save();
+    }
+  }
+
+  if (user.user_type === UserType.Patient) {
+    const patient = await PatientModel.findOne({ patient_id: user._id });
+    if (patient) {
+      patient.gender = gender ?? patient.gender;
+      patient.date_of_birth = date_of_birth ?? patient.date_of_birth;
+      await patient.save();
+    }
+  }
+
+  res.status(200).json({ message: "User updated successfully" });
 });

@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { Slot, SlotTime } from '../types/models';
 
 const bookedSlotSchema = new Schema<Slot>({
