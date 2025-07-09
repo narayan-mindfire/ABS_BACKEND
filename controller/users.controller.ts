@@ -4,11 +4,13 @@ import UserModel from "../models/User";
 import DoctorModel from "../models/Doctor";
 import PatientModel from "../models/Patient";
 import { User, UserType } from "../types/models";
+import * as bcrypt from "bcryptjs"
+import { generateToken } from "utils/generateToken";
 
 // @desc Create user (and doctor/patient profile if needed)
 // @route POST /api/v1/users
 // @access Private
-export const createUser = asyncHandler(async (req: Request, res: Response) => {
+export const registerUser = asyncHandler(async (req: Request, res: Response) => {
   const {
     first_name,
     last_name,
@@ -56,17 +58,31 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (user_type === UserType.Patient) {
+    if(!date_of_birth){
+      res.status(400);
+      throw new Error("Date of birth is required for patients");
+    }
+    if(!gender){
+      res.status(400);
+      throw new Error("Gender is required for patients");
+    }
     await PatientModel.create({
       patient_id: user._id,
       gender,
       date_of_birth,
     });
   }
+  const token = generateToken({
+    id: user._id.toString(),
+    email: user.email,
+    user_type: user.user_type,
+  }); 
 
   res.status(201).json({
     message: "User created successfully",
     user_id: user._id,
     user_type,
+    token,
   });
 });
 
@@ -76,10 +92,7 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
 export const getUsers = asyncHandler(async (req: Request, res: Response) => {
   const user_type = req.query.user_type as string;
 
-  if (
-    !user_type ||
-    (user_type !== UserType.Doctor && user_type !== UserType.Patient)
-  ) {
+  if ( !user_type || (user_type !== UserType.Doctor && user_type !== UserType.Patient)) {
     res.status(400);
     throw new Error("user_type must be either doctor or patient");
   }
@@ -154,7 +167,9 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
   user.last_name = last_name ?? user.last_name;
   user.email = email ?? user.email;
   user.phone_number = phone_number ?? user.phone_number;
-  user.password = password ?? user.password;
+  if (password) {
+    user.password = password;
+  }
 
   await user.save();
 
@@ -204,4 +219,35 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
 
   await UserModel.findByIdAndDelete(user_id);
   res.status(200).json({ message: `User is deleted` });
+});
+
+// @desc Login user and get JWT token
+// @route POST /api/v1/users/login
+// @access Public
+export const loginUser = asyncHandler(async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  const user = await UserModel.findOne({ email });
+
+  if (!user) {
+    res.status(401);
+    throw new Error('Invalid email');
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    res.status(401);
+    throw new Error('Invalid password');
+  }
+
+  const token = generateToken({
+    id: user._id.toString(),
+    email: user.email,
+    user_type: user.user_type,
+  });
+
+  res.status(200).json({
+    token,
+    user_id: user._id,
+    user_type: user.user_type,
+  });
 });
