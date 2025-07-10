@@ -28,6 +28,12 @@ export const createAppointment = asyncHandler(async (req: Request, res: Response
     throw new Error('Missing required fields');
   }
 
+  const requestedSlot = new Date(`${slot_date}T${slot_time}`);
+  if(requestedSlot < new Date()){
+    res.status(400);
+    throw new Error("The requested slot is older than current time, hence invalid")
+  }
+
   const existingSlot = await SlotModel.findOne({
     doctor_id,
     slot_date: new Date(slot_date),

@@ -1,5 +1,6 @@
 import mongoose, { Document } from 'mongoose';
 
+// lists all enums for application models
 export enum UserType {
   Patient = 'patient',
   Doctor = 'doctor',
@@ -30,6 +31,8 @@ export enum AppointmentStatus {
   Cancelled = 'cancelled',
   NoShow = 'no-show'
 }
+
+// all interfaces model objects require
 
 export interface User {
   first_name: string;

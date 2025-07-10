@@ -14,14 +14,6 @@ app.use(express.urlencoded({extended: false}))
 
 app.use('/api/v1', router)
 
-app.get("/", (req:Request, res:Response) => {
-    res.send("hello from express, this is written in ts")
-})
-
-app.get("/hi", (req: Request, res: Response) => {
-    res.send("hi, you're in the hi route")
-})
-
 app.use(errorHandler)
 
 app.listen(port, () => {
