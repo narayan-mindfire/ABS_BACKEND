@@ -3,7 +3,6 @@ import { createAppointment, deleteAppointment, getAppointments, getMyAppointment
 import { protect } from "../middleware/authMiddleware"
 import {patientOnly} from "../middleware/allowPatient"
 import { adminOnly } from "../middleware/allowAdmin"
-import { doctorOnly } from "middleware/allowDoctor"
 // appointment routers
 const appointmentRouter = express.Router()
 
@@ -66,7 +65,6 @@ const appointmentRouter = express.Router()
  *       403:
  *         description: Forbidden - Only patients can book appointments
  */
-
 appointmentRouter.route("/").get(protect, adminOnly, getAppointments).post(protect, patientOnly, createAppointment)
 
 /**
