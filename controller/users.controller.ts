@@ -360,3 +360,30 @@ export const updateMe = asyncHandler(async (req: any, res: Response) => {
 
   res.status(200).json({ message: "User updated successfully", user });
 });
+
+// @desc Delete current logged-in user
+// @route PUT /api/v1/users/me
+// @access Private
+export const deleteMe = asyncHandler(async (req: any, res: Response) => {
+  const user_id = req.user._id;
+
+  const user = (await UserModel.findById(user_id)) as User;
+  if (!user) {
+    res.status(404);
+    throw new Error("User to be deleted doesn't exist");
+  }
+
+  const user_type = user.user_type;
+
+  if (user_type === UserType.Doctor) {
+    await DoctorModel.findOneAndDelete({ doctor_id: user_id });
+  } else if (user_type === UserType.Patient) {
+    await PatientModel.findOneAndDelete({ patient_id: user_id });
+  } else {
+    res.status(400);
+    throw new Error("user_type must be either doctor or patient");
+  }
+
+  await UserModel.findByIdAndDelete(user_id);
+  res.status(200).json({ message: `User is deleted` });
+});
