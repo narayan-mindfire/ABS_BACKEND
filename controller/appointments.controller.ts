@@ -2,7 +2,7 @@ import asyncHandler from 'express-async-handler';
 import { Request, Response } from 'express';
 import AppointmentModel from '../models/Appointment';
 import SlotModel from '../models/Slot';
-import { Appointment, AppointmentStatus } from '../types/models';
+import { Appointment, AppointmentStatus, UserType } from '../types/models';
 import mongoose from 'mongoose';
 
 // @desc    Get all appointments
@@ -140,4 +140,25 @@ export const deleteAppointment = asyncHandler(async (req: Request, res: Response
   await appointment.deleteOne();
 
   res.status(200).json({ message: `Appointment ${id} deleted` });
+});
+
+// @desc    Get user's appointments
+export const getMyAppointments = asyncHandler(async (req: any, res: Response) => {
+  const user = req.user;
+
+  let appointments;
+  if (user.user_type === UserType.Patient) {
+    appointments = await AppointmentModel.find({ patient_id: user._id })
+      .populate('doctor_id', 'first_name last_name specialization')
+      .populate('slot_id');
+  } else if (user.user_type === UserType.Doctor) {
+    appointments = await AppointmentModel.find({ doctor_id: user._id })
+      .populate('patient_id', 'first_name last_name')
+      .populate('slot_id');
+  } else {
+    res.status(403);
+    throw new Error("Invalid user type");
+  }
+
+  res.status(200).json(appointments);
 });

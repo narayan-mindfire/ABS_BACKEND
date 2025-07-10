@@ -1,14 +1,13 @@
 // swagger.ts
 import swaggerJSDoc from "swagger-jsdoc"
 import dotenv from "dotenv"
-import { profileEnd } from "console";
 dotenv.config()
 
 export const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Appointment Booking API",
+      title: "Appointment Booking System API",
       version: "1.0.0",
       description: "API documentation for the appointment booking system",
     },

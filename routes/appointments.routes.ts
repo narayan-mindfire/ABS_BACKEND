@@ -1,8 +1,9 @@
 import express from "express"
-import { createAppointment, deleteAppointment, getAppointments, updateAppointment } from "../controller/appointments.controller"
+import { createAppointment, deleteAppointment, getAppointments, getMyAppointments, updateAppointment } from "../controller/appointments.controller"
 import { protect } from "../middleware/authMiddleware"
 import {patientOnly} from "../middleware/allowPatient"
 import { adminOnly } from "../middleware/allowAdmin"
+import { doctorOnly } from "middleware/allowDoctor"
 // appointment routers
 const appointmentRouter = express.Router()
 
@@ -67,6 +68,26 @@ const appointmentRouter = express.Router()
  */
 
 appointmentRouter.route("/").get(protect, adminOnly, getAppointments).post(protect, patientOnly, createAppointment)
+
+/**
+ * @swagger
+ * /appointments/me:
+ *   get:
+ *     summary: Get current user's appointments
+ *     description: Returns a list of appointments for the currently logged-in user (Doctor or Patient).
+ *     tags:
+ *       - Appointments
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of appointments for the current user
+ *       401:
+ *         description: Unauthorized - Token missing or invalid
+ *       403:
+ *         description: Forbidden - Only Doctors or Patients can access this route
+ */
+appointmentRouter.route("/me").get(protect, getMyAppointments)
 
 /**
  * @swagger
