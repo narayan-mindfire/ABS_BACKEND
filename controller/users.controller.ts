@@ -289,12 +289,24 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 // @access Private
 export const getMe = asyncHandler(async (req: any, res: Response) => {
   const user = await UserModel.findById(req.user._id).select('-password');
-
+  
   if (!user) {
     res.status(404);
     throw new Error('User not found');
   }
 
+  let profileData = {};
+
+  if (user.user_type === UserType.Doctor) {
+    const doc = await DoctorModel.findOne({ doctor_id: user._id });
+    if (doc) profileData = { specialization: doc.specialization, bio: doc.bio };
+  }
+
+  if (user.user_type === UserType.Patient) {
+    const pat = await PatientModel.findOne({ patient_id: user._id });
+    if (pat) profileData = { gender: pat.gender, date_of_birth: pat.date_of_birth };
+  }
+  res.status(200).json({ ...user.toObject(), ...profileData });
   res.status(200).json(user);
 });
 
@@ -319,7 +331,7 @@ export const updateMe = asyncHandler(async (req: any, res: Response) => {
     res.status(404);
     throw new Error("User not found");
   }
-
+  
   user.first_name = first_name ?? user.first_name;
   user.last_name = last_name ?? user.last_name;
   user.email = email ?? user.email;
@@ -346,5 +358,5 @@ export const updateMe = asyncHandler(async (req: any, res: Response) => {
     }
   }
 
-  res.status(200).json({ message: "User updated successfully" });
+  res.status(200).json({ message: "User updated successfully", user });
 });
