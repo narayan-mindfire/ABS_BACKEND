@@ -4,7 +4,7 @@ import connectDB from "./config/db"
 import router from "./routes"
 import errorHandler from "./middleware/errorHandler"
 import swaggerUi from "swagger-ui-express";
-import { swaggerSpec } from "./swagger";
+import { swaggerSpec } from "./swagger/swagger";
 
 dotenv.config()
 const port = process.env.PORT

@@ -20,13 +20,20 @@ This is the backend of an Appointment Booking System built with **Node.js**, **E
 ## Project Structure
 
 ```
-controllers
-models
-routes
-middleware
-utils
-index.ts
-swagger.ts
+/src
+  /config -> database connection
+  /controllers -> controller function handles all business logic
+  /models -> db schemas
+  /routes -> structures api routes
+  /middleware -> contains middlewares authorization check and error handler
+  /types -> typescript interfaces defined here
+  /utils -> utility functions
+  /swagger -> swagger configuration
+  index.ts
+/.env
+/.gitignore
+/package.json
+/tsconfig.json
 ```
 
 ---
