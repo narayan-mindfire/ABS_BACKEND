@@ -34,16 +34,16 @@ export const protect = asyncHandler(async (req: any, res: Response, next: NextFu
       req.user = await UserModel.findById(decoded_token.id).select('-password');
 
       if (!req.user) {
-        res.status(401);
+        res.status(404);
         throw new Error('User not found');
       }
       next();
     } catch (error) {
       res.status(401);
-      throw new Error('Not authorized, token failed');
+      throw new Error('Not authorized, invalid token');
     }
   } else {
     res.status(401);
-    throw new Error('Not authorized, no token');
+    throw new Error('Not authorized, missing token');
   }
 });
