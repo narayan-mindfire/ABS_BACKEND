@@ -6,12 +6,18 @@ import errorHandler from "./middleware/errorHandler"
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger/swagger";
 import cookieParser from "cookie-parser"
+import cors from "cors";
 
 dotenv.config()
 const port = process.env.PORT
 
 connectDB()
 const app:Express = express()
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
+
 app.use(express.json())
 app.use(express.urlencoded({extended: false}))
 app.use(cookieParser())
@@ -21,6 +27,11 @@ app.use('/api/v1', router)
 app.use(errorHandler)
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+app.get('/swagger.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 
 app.listen(port, () => {
     console.log(`listening at port ${port}`)

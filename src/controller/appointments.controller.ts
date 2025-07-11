@@ -145,8 +145,10 @@ export const deleteAppointment = asyncHandler(async (req: Request, res: Response
 // @desc    Get user's appointments
 export const getMyAppointments = asyncHandler(async (req: any, res: Response) => {
   const user = req.user;
+  console.log("user is checking their appointments: ", user);
 
   let appointments;
+
   if (user.user_type === UserType.Patient) {
     appointments = await AppointmentModel.find({ patient_id: user._id })
       .populate('doctor_id', 'first_name last_name specialization')
@@ -160,5 +162,26 @@ export const getMyAppointments = asyncHandler(async (req: any, res: Response) =>
     throw new Error("Invalid user type");
   }
 
-  res.status(204);
+  // Format and return only necessary data
+  const formatted = appointments.map((appointment) => {
+    const isDoctor = user.user_type === UserType.Doctor;
+    const nameObj = isDoctor
+      ? appointment.patient_id as any
+      : appointment.doctor_id as any;
+
+    const slot = appointment.slot_id as any;
+
+    return {
+      id: appointment._id,
+      name: `${nameObj.first_name} ${nameObj.last_name}`,
+      email: nameObj.email,
+      doctor: isDoctor ? undefined : `${(appointment.doctor_id as any).first_name} ${(appointment.doctor_id as any).last_name}`,
+      date: slot?.slot_date?.toISOString().split('T')[0],
+      slot: slot?.slot_time,
+      purpose: appointment.purpose || "",
+      status: appointment.status,
+    };
+  });
+
+  res.status(200).json(formatted);
 });

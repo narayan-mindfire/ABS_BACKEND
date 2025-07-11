@@ -104,6 +104,7 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
 // @route POST /api/v1/auth/login
 // @access Public
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
+  console.log("login user called")
   const { email, password } = req.body;
   const user = await UserModel.findOne({ email });
 
@@ -129,6 +130,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     email: user.email,
     user_type: user.user_type,
   })
+  console.log("sent token: ", token);
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
@@ -136,6 +138,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     sameSite: "strict",
     maxAge: 7 * 24 * 60 * 60 * 1000, 
   });
+  console.log("refresh token", refreshToken)
 
 
   res.status(200).json({
