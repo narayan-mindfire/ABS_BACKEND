@@ -1,5 +1,5 @@
 import express  from "express"
-import { registerUser, deleteUser, getUsers, updateUser, loginUser, getUserById, getMe, updateMe, deleteMe } from "../controller/users.controller"
+import { registerUser, deleteUser, getUsers, updateUser, loginUser, getUserById, getMe, updateMe, deleteMe, refreshToken } from "../controller/users.controller"
 import { protect } from "../middleware/authMiddleware"
 import { adminOnly } from "../middleware/allowAdmin"
 
@@ -215,7 +215,7 @@ userRouter.post('/login', loginUser)
  *                 type: string
  *                 format: date
  *     responses:
- *       200:
+ *       204:
  *         description: User updated successfully
  *       401:
  *         description: Unauthorized - missing or invalid token
@@ -328,7 +328,7 @@ userRouter
  *           type: string
  *         description: MongoDB user ID
  *     responses:
- *       200:
+ *       204:
  *         description: User deleted successfully
  *       400:
  *         description: Invalid user type
@@ -344,5 +344,24 @@ userRouter
   .get(protect, adminOnly, getUserById)
   .put(protect, adminOnly, updateUser)
   .delete(protect, adminOnly, deleteUser);
+
+/**
+ * @swagger
+ * /users/refresh-token:
+ *   post:
+ *     summary: Refresh the access token using a valid refresh token cookie
+ *     tags: [Users]
+ *     description: |
+ *       This endpoint generates a new access token by validating the refresh token stored in the user's cookie.
+ *       The refresh token must be present in the HTTP-only cookie named `refreshToken`.
+ *     responses:
+ *       200:
+ *         description: New access token generated
+ *       401:
+ *         description: No refresh token provided
+ *       403:
+ *         description: Invalid or expired refresh token
+ */
+userRouter.post('/refresh-token', refreshToken);
 
 export default userRouter

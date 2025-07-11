@@ -5,15 +5,16 @@ import router from "./routes"
 import errorHandler from "./middleware/errorHandler"
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger/swagger";
+import cookieParser from "cookie-parser"
 
 dotenv.config()
 const port = process.env.PORT
 
 connectDB()
 const app:Express = express()
-
 app.use(express.json())
 app.use(express.urlencoded({extended: false}))
+app.use(cookieParser())
 
 app.use('/api/v1', router)
 

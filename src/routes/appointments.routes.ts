@@ -146,7 +146,7 @@ appointmentRouter.route("/me").get(protect, getMyAppointments)
  *         schema:
  *           type: string
  *     responses:
- *       200:
+ *       204:
  *         description: Appointment deleted successfully
  *       401:
  *         description: Unauthorized

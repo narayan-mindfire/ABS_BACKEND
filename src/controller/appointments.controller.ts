@@ -160,5 +160,5 @@ export const getMyAppointments = asyncHandler(async (req: any, res: Response) =>
     throw new Error("Invalid user type");
   }
 
-  res.status(200).json(appointments);
+  res.status(204);
 });

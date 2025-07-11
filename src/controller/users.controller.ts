@@ -5,7 +5,8 @@ import DoctorModel from "../models/Doctor";
 import PatientModel from "../models/Patient";
 import { User, UserType } from "../types/models";
 import * as bcrypt from "bcryptjs"
-import { generateToken } from "../utils/generateToken";
+import { generateToken, Payload } from "../utils/generateToken";
+import jwt from 'jsonwebtoken';
 
 // @desc Create user (and doctor/patient profile if needed)
 // @route POST /api/v1/users
@@ -77,6 +78,19 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
     email: user.email,
     user_type: user.user_type,
   }); 
+  
+  const refreshToken = generateToken({
+    id: user._id.toString(),
+    email: user.email,
+    user_type: user.user_type,
+  })
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000, 
+  });
 
   res.status(201).json({
     message: "User created successfully",
@@ -250,7 +264,7 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
   }
 
   await UserModel.findByIdAndDelete(user_id);
-  res.status(200).json({ message: `User is deleted` });
+  res.status(202);
 });
 
 // @desc Login user and get JWT token
@@ -276,6 +290,20 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     email: user.email,
     user_type: user.user_type,
   });
+
+  const refreshToken = generateToken({
+    id: user._id.toString(),
+    email: user.email,
+    user_type: user.user_type,
+  })
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000, 
+  });
+
 
   res.status(200).json({
     token,
@@ -385,5 +413,29 @@ export const deleteMe = asyncHandler(async (req: any, res: Response) => {
   }
 
   await UserModel.findByIdAndDelete(user_id);
-  res.status(200).json({ message: `User is deleted` });
+  res.status(204);
+});
+
+// @desc generates new access token again a valid refresh token
+// @route PUT /api/v1/users/refresh-token
+// @access Private
+export const refreshToken = asyncHandler(async (req: any, res: any) => {
+  const token = req.cookies.refreshToken;
+  if (!token) {
+    return res.status(401).json({ message: "No refresh token provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.REFRESH_SECRET!) as Payload;
+
+    const accessToken = generateToken({
+      id: decoded.id,
+      email: decoded.email,
+      user_type: decoded.user_type,
+    });
+
+    res.status(200).json({ accessToken });
+  } catch (err) {
+    res.status(403).json({ message: "Invalid or expired refresh token" });
+  }
 });
