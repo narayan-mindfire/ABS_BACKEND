@@ -5,7 +5,7 @@ import DoctorModel from "../models/Doctor";
 import PatientModel from "../models/Patient";
 import { UserType } from "../types/models";
 import * as bcrypt from "bcryptjs"
-import { generateToken, Payload } from "../utils/generateToken";
+import { generateRefreshToken, generateToken, Payload } from "../utils/generateToken";
 import jwt from 'jsonwebtoken';
 
 // @desc Create user (and doctor/patient profile if needed)
@@ -79,7 +79,7 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
     user_type: user.user_type,
   }); 
   
-  const refreshToken = generateToken({
+  const refreshToken = generateRefreshToken({
     id: user._id.toString(),
     email: user.email,
     user_type: user.user_type,
@@ -124,7 +124,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     user_type: user.user_type,
   });
 
-  const refreshToken = generateToken({
+  const refreshToken = generateRefreshToken({
     id: user._id.toString(),
     email: user.email,
     user_type: user.user_type,
@@ -153,10 +153,8 @@ export const refreshToken = asyncHandler(async (req: any, res: any) => {
   if (!token) {
     return res.status(401).json({ message: "No refresh token provided" });
   }
-
   try {
-    const decoded = jwt.verify(token, process.env.REFRESH_SECRET!) as Payload;
-
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET!) as Payload;
     const accessToken = generateToken({
       id: decoded.id,
       email: decoded.email,
