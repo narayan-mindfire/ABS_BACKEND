@@ -13,7 +13,7 @@ export interface Payload {
  */
 export const generateToken = ({ id, email, user_type }: Payload) => {
   return jwt.sign({ id, email, user_type }, process.env.JWT_SECRET!, {
-    expiresIn: '1d',
+    expiresIn: '10s',
   });
 };
 

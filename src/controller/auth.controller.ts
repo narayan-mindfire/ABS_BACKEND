@@ -26,13 +26,13 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
   } = req.body;
 
   if (!first_name || !last_name || !email || !user_type || !password) {
-    res.status(400);
+    res.statusCode = 400;
     throw new Error("Missing required user fields");
   }
 
   const existingUser = await UserModel.findOne({ email });
   if (existingUser) {
-    res.status(400);
+    res.statusCode = 400;
     throw new Error("User with this email already exists");
   }
 
@@ -47,7 +47,7 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
 
   if (user_type === UserType.Doctor) {
     if (!specialization) {
-      res.status(400);
+      res.statusCode =400;
       throw new Error("Specialization is required for doctors");
     }
 
@@ -60,11 +60,11 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
 
   if (user_type === UserType.Patient) {
     if(!date_of_birth){
-      res.status(400);
+      res.statusCode=400;
       throw new Error("Date of birth is required for patients");
     }
     if(!gender){
-      res.status(400);
+      res.statusCode=400;
       throw new Error("Gender is required for patients");
     }
     await PatientModel.create({
@@ -109,13 +109,13 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
   const user = await UserModel.findOne({ email });
 
   if (!user) {
-    res.status(401);
+    res.statusCode=401;
     throw new Error('Invalid email');
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    res.status(401);
+    res.statusCode = 401;
     throw new Error('Invalid password');
   }
 

@@ -17,7 +17,7 @@ export const getUsers = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if ( user_type !== UserType.Doctor && user_type !== UserType.Patient) {
-    res.status(400);
+    res.statusCode =400;
     throw new Error("user_type must be either doctor or patient");
   }
 
@@ -72,7 +72,7 @@ export const getUserById = asyncHandler(async (req: Request, res: Response) => {
 
   const user = await UserModel.findById(id).select('-password');
   if (!user) {
-    res.status(404);
+    res.statusCode = 404;
     throw new Error("User not found");
   }
 
@@ -110,7 +110,7 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
 
   const user = await UserModel.findById(id);
   if (!user) {
-    res.status(404);
+    res.statusCode = 404;
     throw new Error('User not found');
   }
 
@@ -153,7 +153,7 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
 
   const user = (await UserModel.findById(user_id)) as User;
   if (!user) {
-    res.status(404);
+    res.statusCode = 404;
     throw new Error("User to be deleted doesn't exist");
   }
 
@@ -164,7 +164,7 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
   } else if (user_type === UserType.Patient) {
     await PatientModel.findOneAndDelete({ patient_id: user_id });
   } else {
-    res.status(400);
+    res.statusCode = 400;
     throw new Error("user_type must be either doctor or patient");
   }
 
@@ -179,7 +179,7 @@ export const getMe = asyncHandler(async (req: any, res: Response) => {
   const user = await UserModel.findById(req.user._id).select('-password');
   
   if (!user) {
-    res.status(404);
+    res.statusCode = 404;
     throw new Error('User not found');
   }
 
@@ -195,7 +195,6 @@ export const getMe = asyncHandler(async (req: any, res: Response) => {
     if (pat) profileData = { gender: pat.gender, date_of_birth: pat.date_of_birth };
   }
   res.status(200).json({ ...user.toObject(), ...profileData });
-  res.status(200).json(user);
 });
 
 // @desc Update current logged-in user
@@ -216,7 +215,7 @@ export const updateMe = asyncHandler(async (req: any, res: Response) => {
 
   const user = await UserModel.findById(req.user._id);
   if (!user) {
-    res.status(404);
+    res.statusCode = 404;
     throw new Error("User not found");
   }
   
@@ -257,7 +256,7 @@ export const deleteMe = asyncHandler(async (req: any, res: Response) => {
 
   const user = (await UserModel.findById(user_id)) as User;
   if (!user) {
-    res.status(404);
+    res.statusCode = 404;
     throw new Error("User to be deleted doesn't exist");
   }
 
@@ -268,7 +267,7 @@ export const deleteMe = asyncHandler(async (req: any, res: Response) => {
   } else if (user_type === UserType.Patient) {
     await PatientModel.findOneAndDelete({ patient_id: user_id });
   } else {
-    res.status(400);
+    res.statusCode = 400;
     throw new Error("user_type must be either doctor or patient");
   }
 
