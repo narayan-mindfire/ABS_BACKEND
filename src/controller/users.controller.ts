@@ -4,6 +4,7 @@ import UserModel from "../models/User";
 import DoctorModel from "../models/Doctor";
 import PatientModel from "../models/Patient";
 import { User, UserType } from "../types/models";
+import { send } from "process";
 
 // @desc  Gets list of users based on user type
 // @route GET /api/v1/users/<user_type>
@@ -169,7 +170,7 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
   }
 
   await UserModel.findByIdAndDelete(user_id);
-  res.status(202);
+  res.status(202).send();
 });
 
 // @desc Get current logged-in user
@@ -272,5 +273,5 @@ export const deleteMe = asyncHandler(async (req: any, res: Response) => {
   }
 
   await UserModel.findByIdAndDelete(user_id);
-  res.status(204);
+  res.status(204).send();
 });

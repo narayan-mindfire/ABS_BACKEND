@@ -28,7 +28,7 @@ export const protect = asyncHandler(async (req: any, res: Response, next: NextFu
 
   if (req.headers.authorization?.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
-
+    console.log("got token: ", token)
     try {
       const decoded_token = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
       req.user = await UserModel.findById(decoded_token.id).select('-password');
@@ -39,10 +39,12 @@ export const protect = asyncHandler(async (req: any, res: Response, next: NextFu
       }
       next();
     } catch (error) {
+      console.log("not authrorized aur invalida token")
       res.status(401);
       throw new Error('Not authorized, invalid token');
     }
   } else {
+    console.log("no token found")
     res.status(401);
     throw new Error('Not authorized, missing token');
   }
