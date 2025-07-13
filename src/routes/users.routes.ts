@@ -2,6 +2,7 @@ import express  from "express"
 import { deleteUser, getUsers, updateUser, getUserById, getMe, updateMe, deleteMe } from "../controller/users.controller"
 import { protect } from "../middleware/authMiddleware"
 import { adminOnly } from "../middleware/allowAdmin"
+import { patientOnly } from "../middleware/allowPatient"
 
 const userRouter = express.Router()
 
@@ -57,7 +58,7 @@ const userRouter = express.Router()
  *       403:
  *         description: Forbidden - user is not an admin
  */
-userRouter.route("/").get(protect, adminOnly, getUsers);
+userRouter.route("/").get(protect, patientOnly, getUsers);
 
 /**
  * @swagger

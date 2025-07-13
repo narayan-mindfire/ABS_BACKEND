@@ -20,9 +20,9 @@ export const getAppointments = asyncHandler(async (req: Request, res: Response) 
 // @desc    Create new appointment
 // @route   POST /api/v1/appointments
 // @access  Private (patient only)
-export const createAppointment = asyncHandler(async (req: Request, res: Response) => {
-  const { patient_id, doctor_id, slot_date, slot_time, purpose } = req.body;
-
+export const createAppointment = asyncHandler(async (req: any, res: Response) => {
+  const { doctor_id, slot_date, slot_time, purpose } = req.body;
+  const patient_id = (req as any).user._id;
   if (!patient_id || !doctor_id || !slot_date || !slot_time) {
     res.status(400);
     throw new Error('Missing required fields');
