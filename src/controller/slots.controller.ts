@@ -33,3 +33,21 @@ export const getBookedSlotsByDoctor = asyncHandler(async (req: any, res: Respons
   const slots = await bookedSlotSchema.find({ doctor_id: doctorId });
   res.status(200).json(slots);
 })
+
+// GET /api/v1/slots/doctor?doctor_id=xxx&slot_date=yyyy-mm-dd
+export const getBookedSlotsForDoctorAndDate = asyncHandler(async (req: Request, res: Response) => {
+  const { doctor_id, slot_date } = req.query;
+
+  if (!doctor_id || !slot_date) {
+    res.status(400);
+    throw new Error("doctor_id and slot_date are required");
+  }
+
+  const slots = await bookedSlotSchema.find({
+    doctor_id,
+    slot_date,
+  });
+
+  const bookedTimes = slots.map((slot) => slot.slot_time);
+  res.status(200).json(bookedTimes);
+});
