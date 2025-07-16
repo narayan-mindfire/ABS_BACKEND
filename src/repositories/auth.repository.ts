@@ -1,7 +1,6 @@
 import UserModel from "../models/User";
 import DoctorModel from "../models/Doctor";
 import PatientModel from "../models/Patient";
-import { UserType } from "../types/models";
 
 export const AuthRepository = {
   findUserByEmail: (email: string) => UserModel.findOne({ email }),

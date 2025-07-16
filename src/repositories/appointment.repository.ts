@@ -1,61 +1,63 @@
 import AppointmentModel from "../models/Appointment";
 import SlotModel from "../models/Slot";
+import { Appointment, SlotDocument } from "../types/models";
+import { BaseRepository } from "./BaseRepository";
 import mongoose from "mongoose";
 
-export const AppointmentRepository = {
-  async findAll() {
+class AppointmentRepositoryClass {
+  private appointmentRepo = new BaseRepository<Appointment>(AppointmentModel);
+  private slotRepo = new BaseRepository<SlotDocument>(SlotModel);
+
+  findAll() {
     return AppointmentModel.find()
       .populate("patient_id", "first_name last_name")
       .populate("doctor_id", "first_name last_name specialization")
       .populate("slot_id", "slot_date slot_time");
-  },
+  }
 
-  async createSlot(data: {
-    doctor_id: string;
-    slot_date: Date;
-    slot_time: string;
-    expire_at: Date;
-  }) {
-    return SlotModel.create(data);
-  },
+  findById(id: string) {
+    return this.appointmentRepo.findById(id);
+  }
 
-  async findSlot(doctor_id: string, slot_date: Date, slot_time: string) {
+  createAppointment(data: Partial<Appointment>) {
+    return this.appointmentRepo.create(data);
+  }
+
+  updateAppointment(id: string, data: Partial<Appointment>) {
+    return this.appointmentRepo.update(id, data);
+  }
+
+  deleteAppointment(id: string) {
+    return this.appointmentRepo.delete(id);
+  }
+
+  createSlot(data: Partial<SlotDocument>) {
+    return this.slotRepo.create(data);
+  }
+
+  findSlotById(slotId: mongoose.Types.ObjectId) {
+    return this.slotRepo.findById(slotId.toString());
+  }
+
+  deleteSlot(slotId: string) {
+    return this.slotRepo.delete(slotId);
+  }
+
+  findSlot(doctor_id: string, slot_date: Date, slot_time: string) {
     return SlotModel.findOne({ doctor_id, slot_date, slot_time });
-  },
+  }
 
-  async createAppointment(data: any) {
-    return AppointmentModel.create(data);
-  },
-
-  async findById(id: string) {
-    return AppointmentModel.findById(id);
-  },
-
-  async findSlotById(slotId: mongoose.Types.ObjectId) {
-    return SlotModel.findById(slotId);
-  },
-
-  async updateAppointment(id: string, data: any) {
-    return AppointmentModel.findByIdAndUpdate(id, data, { new: true });
-  },
-
-  async deleteAppointment(id: string) {
-    return AppointmentModel.findByIdAndDelete(id);
-  },
-
-  async deleteSlot(slotId: string) {
-    return SlotModel.findByIdAndDelete(slotId);
-  },
-
-  async findByPatient(patientId: string) {
+  findByPatient(patientId: string) {
     return AppointmentModel.find({ patient_id: patientId })
       .populate("doctor_id", "first_name last_name specialization")
       .populate("slot_id");
-  },
+  }
 
-  async findByDoctor(doctorId: string) {
+  findByDoctor(doctorId: string) {
     return AppointmentModel.find({ doctor_id: doctorId })
       .populate("patient_id", "first_name last_name")
       .populate("slot_id");
-  },
-};
+  }
+}
+
+export const AppointmentRepository = new AppointmentRepositoryClass();

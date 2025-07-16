@@ -76,7 +76,7 @@ export const AppointmentService = {
         await AppointmentRepository.deleteSlot(currentSlot._id.toString());
 
       const newSlot = await AppointmentRepository.createSlot({
-        doctor_id: appointment.doctor_id.toString(),
+        doctor_id: appointment.doctor_id,
         slot_date: new Date(slot_date),
         slot_time,
         expire_at: new Date(`${slot_date}T${slot_time}`),
