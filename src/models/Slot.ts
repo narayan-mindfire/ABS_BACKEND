@@ -1,8 +1,8 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { Slot, SlotTime } from '../types/models';
 
 const bookedSlotSchema = new Schema<Slot>({
-  doctor_id: { type: Schema.Types.ObjectId, ref: 'Doctor', required: true },
+  doctor_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   slot_date: { type: Date, required: true },
   slot_time: {
     type: String,

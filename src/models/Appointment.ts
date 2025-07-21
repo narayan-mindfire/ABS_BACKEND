@@ -2,8 +2,8 @@ import mongoose, { Schema } from 'mongoose';
 import { Appointment, AppointmentStatus } from '../types/models';
 
 const appointmentSchema = new Schema<Appointment>({
-  patient_id: { type: Schema.Types.ObjectId, ref: 'Patient', required: true },
-  doctor_id: { type: Schema.Types.ObjectId, ref: 'Doctor', required: true },
+  patient_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  doctor_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   slot_id: { type: Schema.Types.ObjectId, ref: 'Slot', required: true },
   status: {
     type: String,

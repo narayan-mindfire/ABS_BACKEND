@@ -1,35 +1,38 @@
-import mongoose, { Document } from 'mongoose';
+import mongoose, { Document } from "mongoose";
 
+// lists all enums for application models
 export enum UserType {
-  Patient = 'patient',
-  Doctor = 'doctor',
-  Admin = 'admin'
+  Patient = "patient",
+  Doctor = "doctor",
+  Admin = "admin",
 }
 
 export enum SlotTime {
-  T10 = '10:00',
-  T11 = '11:00',
-  T12 = '12:00',
-  T14 = '14:00',
-  T15 = '15:00',
-  T16 = '16:00',
-  T17 = '17:00'
+  T10 = "10:00",
+  T11 = "11:00",
+  T12 = "12:00",
+  T14 = "14:00",
+  T15 = "15:00",
+  T16 = "16:00",
+  T17 = "17:00",
 }
 
 export enum Specialization {
-  Cardiology = 'Cardiology',
-  Medicine = 'Medicine',
-  Dermatology = 'Dermatology',
-  Neurology = 'Neurology',
-  Pediatrics = 'Pediatrics'
+  Cardiology = "Cardiology",
+  Medicine = "Medicine",
+  Dermatology = "Dermatology",
+  Neurology = "Neurology",
+  Pediatrics = "Pediatrics",
 }
 
 export enum AppointmentStatus {
-  Booked = 'booked',
-  Completed = 'completed',
-  Cancelled = 'cancelled',
-  NoShow = 'no-show'
+  Booked = "booked",
+  Completed = "completed",
+  Cancelled = "cancelled",
+  NoShow = "no-show",
 }
+
+// all interfaces model objects require
 
 export interface User {
   first_name: string;
@@ -54,12 +57,14 @@ export interface Doctor extends Document {
   bio?: string;
 }
 
-export interface Slot extends Document {
+export interface Slot {
   doctor_id: mongoose.Types.ObjectId;
   slot_date: Date;
   slot_time: string;
   expire_at: Date;
 }
+
+export type SlotDocument = Slot & Document<mongoose.Types.ObjectId>;
 
 export interface Appointment extends Document {
   patient_id: mongoose.Types.ObjectId;
