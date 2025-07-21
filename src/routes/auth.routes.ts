@@ -1,5 +1,12 @@
-import express from "express"
-import { loginUser, refreshToken, registerUser } from "../controller/auth.controller";
+import express from "express";
+import {
+  getMe,
+  loginUser,
+  logoutUser,
+  refreshToken,
+  registerUser,
+} from "../controller/auth.controller";
+import { protect } from "../middleware/authMiddleware";
 
 const authRouter = express.Router();
 
@@ -10,8 +17,8 @@ const authRouter = express.Router();
  *     summary: Register a new user (doctor or patient)
  *     tags: [Auth]
  *     description: |
- *       Creates a user and conditionally creates a doctor or patient profile based on `user_type`.  
- *       - For `doctor`, `specialization` is required.  
+ *       Creates a user and conditionally creates a doctor or patient profile based on `user_type`.
+ *       - For `doctor`, `specialization` is required.
  *       - For `patient`, `gender` and `date_of_birth` are required.
  *     requestBody:
  *       required: true
@@ -80,7 +87,7 @@ const authRouter = express.Router();
  *       400:
  *         description: Missing required fields or email already in use
  */
-authRouter.post('/register', registerUser);
+authRouter.post("/register", registerUser);
 
 /**
  * @swagger
@@ -108,7 +115,7 @@ authRouter.post('/register', registerUser);
  *       401:
  *         description: Invalid credentials
  */
-authRouter.post('/login', loginUser)
+authRouter.post("/login", loginUser);
 
 /**
  * @swagger
@@ -127,6 +134,38 @@ authRouter.post('/login', loginUser)
  *       403:
  *         description: Invalid or expired refresh token
  */
-authRouter.post('/refresh-token', refreshToken);
+authRouter.post("/refresh-token", refreshToken);
 
-export default authRouter
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logs out a user by clearing the authentication cookies
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: User logged out successfully
+ *       401:
+ *         description: User not authenticated
+ *     description: |
+ *       This endpoint clears the authentication cookies (`accessToken` and `refreshToken`) to log out the user.
+ *       It should be called when the user wants to log out of the application.
+ *       The cookies are set to expire immediately, effectively logging the user out.
+ */
+authRouter.post("/logout", logoutUser);
+
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get the authenticated user's profile
+ *     tags: [Auth]
+ *     description: |
+ *       This endpoint retrieves the profile of the currently authenticated user.
+ *       It requires the user to be authenticated via the `protect` middleware.
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user profile
+ */
+authRouter.get("/me", protect, getMe);
+export default authRouter;

@@ -13,7 +13,7 @@ export interface Payload {
  */
 export const generateToken = ({ id, email, user_type }: Payload) => {
   return jwt.sign({ id, email, user_type }, process.env.JWT_SECRET!, {
-    expiresIn: '10h',
+    expiresIn: "10h",
   });
 };
 
@@ -23,5 +23,7 @@ export const generateToken = ({ id, email, user_type }: Payload) => {
  * @returns A signed JWT as a string, valid for 1 hour.
  */
 export const generateRefreshToken = ({ id, email, user_type }: Payload) => {
-  return jwt.sign({id, email, user_type}, process.env.JWT_REFRESH_SECRET!, { expiresIn: "7d" });
+  return jwt.sign({ id, email, user_type }, process.env.JWT_REFRESH_SECRET!, {
+    expiresIn: "7d",
+  });
 };

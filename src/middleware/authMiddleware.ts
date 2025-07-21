@@ -1,7 +1,7 @@
-import jwt from 'jsonwebtoken';
-import asyncHandler from 'express-async-handler';
-import UserModel from '../models/User';
-import { Response, NextFunction } from 'express';
+import jwt from "jsonwebtoken";
+import asyncHandler from "express-async-handler";
+import UserModel from "../models/User";
+import { Response, NextFunction, Request } from "express";
 
 interface JwtPayload {
   id: string;
@@ -10,39 +10,35 @@ interface JwtPayload {
 }
 
 /**
- * Middleware to protect routes by verifying JWT tokens.
+ * Middleware to protect routes using JWT from cookies.
  *
- * This middleware checks for a Bearer token in the `Authorization` header,
- * verifies the token using the JWT secret, and attaches the corresponding user
- * (excluding the password) to the `req.user` property. If the token is missing,
- * invalid, or the user does not exist, it responds with a 401 Unauthorized error.
- *
- * @param req - Express request object, extended to include `user` property.
- * @param res - Express response object.
- * @param next - Express next middleware function.
- *
- * @throws {Error} If no token is provided, the token is invalid, or the user is not found.
+ * This reads the access token from `req.cookies.accessToken`,
+ * verifies it, and attaches the user to `req.user`.
  */
-export const protect = asyncHandler(async (req: any, res: Response, next: NextFunction) => {
-  let token;
+export const protect = asyncHandler(
+  async (req: Request & { user?: any }, res: Response, next: NextFunction) => {
+    const token = req.cookies.accessToken;
 
-  if (req.headers.authorization?.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
-    try {
-      const decoded_token = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-      req.user = await UserModel.findById(decoded_token.id).select('-password');
-
-      if (!req.user) {
-        res.status(404);
-        throw new Error('User not found');
-      }
-      next();
-    } catch (error) {
+    if (!token) {
       res.status(401);
-      throw new Error('Not authorized, invalid token');
+      throw new Error("Not authorized, no token found");
     }
-  } else {
-    res.status(401);
-    throw new Error('Not authorized, missing token');
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+
+      const user = await UserModel.findById(decoded.id).select("-password");
+
+      if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+      }
+
+      req.user = user;
+      next();
+    } catch (err) {
+      res.status(401);
+      throw new Error("Not authorized, token failed");
+    }
   }
-});
+);
